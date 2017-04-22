@@ -96,9 +96,8 @@ public class Main {
                 dataModel.setFeaturevector(inputVector);
             }
 
+            KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, 51);
             for( DataModel dataModel: testingDataList) {
-
-                KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, 3);
                 int prediction = knnClassifier.test(dataModel);
                 if(prediction == 1){
                     if(dataModel.isPos()) tp++;
@@ -110,8 +109,8 @@ public class Main {
                 }
 
                 testCount++;
-                if(testCount%40==0){
-                    System.out.print(testCount/4 + "% -> ");
+                if(testCount%20==0){
+                    System.out.print(testCount/2 + "% -> ");
                 }
             }
 
