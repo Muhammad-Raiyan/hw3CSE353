@@ -46,7 +46,4 @@ public class ReadFile {
         }
         return fullFile;
     }
-    public void shuffle(){
-
-    }
 }

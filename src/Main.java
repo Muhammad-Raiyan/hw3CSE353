@@ -71,12 +71,6 @@ public class Main {
                         defaultFeatureVector.put(key, 0.0);
                     }
                 }
-
-                // Print status of preprocess
-                count++;
-                if(count%160==0){
-                    System.out.print(count/16.00 + "% -> ");
-                }
             }
 
             for (DataModel dataModel: trainingDataList){
@@ -84,6 +78,11 @@ public class Main {
                 inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
                 dataModel.setFeaturevector(inputVector);
 
+                // Print status of preprocess
+                count++;
+                if(count%160==0){
+                    System.out.print(count/16.00 + "% -> ");
+                }
             }
             System.out.println();
         }
