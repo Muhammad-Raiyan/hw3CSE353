@@ -8,6 +8,8 @@ public class Main {
     public static int NFold = 5;
     private static final String positiveDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw1CS353\\data\\pos";
     private static final String negativeDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw1CS353\\data\\neg";
+    private static final String stopWordsDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw3CSE353\\data\\stopWords.txt";
+    private static String[] stopWords;
     private static String filter = "[^a-zA-Z\\s]";
 
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
@@ -20,10 +22,13 @@ public class Main {
         pathList.addAll(readFile.loadFileNames(Paths.get(negativeDir)));
         long seed = System.nanoTime();
         Collections.shuffle(pathList, new Random(seed));
-
+        String stopWord = readFile.loadFromFile(Paths.get(stopWordsDir));
+        stopWord = stopWord.replace("\r", " ").replace("\n", " ");
+        stopWords = stopWord.split(" ");
         for(Path path: pathList){
             String content = readFile.loadFromFile(path);
-            content = content.replace("\r", "").replace("\n", "");
+            content = content.replace("\r", " ").replace("\n", " ");
+
             //content = content.replaceAll(filter, "");
 
             // add all datamodel to filelist
@@ -35,8 +40,10 @@ public class Main {
                 dm = new DataModel(path, false);
             }
 
-            String sArray[] = content.split(" ");
-            dm.setContent(new ArrayList<>(Arrays.asList(sArray)));
+            ArrayList<String> sArray = new ArrayList<>(Arrays.asList(content.split(" ")));
+            sArray.replaceAll(String::toLowerCase);
+            sArray = removeStopWords(sArray);
+            dm.setContent(sArray);
 
             dataModels.add(dm);
         }
@@ -137,4 +144,12 @@ public class Main {
         System.out.println("Average Recall: " + String.format("%.3f", avgRecall/5.0));
     }
 
+    public static ArrayList<String> removeStopWords(ArrayList<String> content){
+
+        for(int i=0; i<stopWords.length; i++){
+            content.remove(stopWords[i]);
+        }
+
+        return content;
+    }
 }
