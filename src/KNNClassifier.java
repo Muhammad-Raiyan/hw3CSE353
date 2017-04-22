@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,16 +17,12 @@ public class KNNClassifier {
     }
 
     public int test(DataModel dataModel) {
-        ArrayList<Double> distanceList = new ArrayList<>();
         HashMap<Double, DataModel> distanceMap = new HashMap<>();
         for(DataModel currentDataPoint : trainingDataList){
             distanceMap.put(getDistance(currentDataPoint.getFeaturevector(), dataModel), currentDataPoint);
         }
-        distanceList = new ArrayList<>(distanceMap.keySet());
-        Collections.sort(distanceList);
-        double distance = distanceList.get(0);
         //System.out.println(distance + " " + distanceMap.get(distance).isPos() + " " + dataModel.isPos());
-        return distanceMap.get(distance).isPos() ? 1 : 0;
+        return majorityVote(distanceMap, 9) ? 1 : 0;
     }
 
     private Double getDistance(HashMap<String, Double> currentDataPoint, DataModel testingDataModel) {
@@ -43,5 +40,27 @@ public class KNNClassifier {
 
     private Double manhattanDistance(Double x, Double y) {
         return Math.abs(x-y);
+    }
+
+    private double euclideanDistance(Double x, Double y){
+        double result = x - y;
+        return Math.sqrt(result*result);
+    }
+
+    private boolean majorityVote(HashMap<Double, DataModel> distanceMap, int k){
+        ArrayList<Double> distanceList = new ArrayList<>(distanceMap.keySet());
+        Collections.sort(distanceList);
+        int pos = 0, neg = 0;
+        double distance = distanceList.get(0);
+        for(int i =0; i< k; i++){
+            if(distanceMap.get(distanceList.get(i)).isPos()){
+                pos++;
+            }
+            else {
+                neg++;
+            }
+        }
+        if(pos>neg) return true;
+        else return false;
     }
 }
