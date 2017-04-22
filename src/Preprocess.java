@@ -36,9 +36,7 @@ public class Preprocess {
     public HashMap<String, Double> buildBinaryFeatureVector(HashMap<String, Double> inputMap, ArrayList<String> content){
         HashMap<String, Double> tempMap = new HashMap<>(inputMap);
         for(String currentKey: content){
-            if(tempMap.containsKey(currentKey) && tempMap.get(currentKey) == 0.0){
-                tempMap.put(currentKey, 1.0);
-            }
+            tempMap.put(currentKey, 1.0);
         }
         return tempMap;
     }
@@ -50,6 +48,9 @@ public class Preprocess {
                 double temp = tempMap.get(currentKey);
                 temp++;
                 tempMap.put(currentKey, temp);
+            }
+            else{
+                tempMap.put(currentKey, 0.0);
             }
         }
         return tempMap;
