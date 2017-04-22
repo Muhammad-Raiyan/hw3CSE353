@@ -22,9 +22,9 @@ public class Main {
         pathList.addAll(readFile.loadFileNames(Paths.get(negativeDir)));
         long seed = System.nanoTime();
         Collections.shuffle(pathList, new Random(seed));
-        String stopWord = readFile.loadFromFile(Paths.get(stopWordsDir));
-        stopWord = stopWord.replace("\r", " ").replace("\n", " ");
-        stopWords = stopWord.split(" ");
+        //String stopWord = readFile.loadFromFile(Paths.get(stopWordsDir));
+        //stopWord = stopWord.replace("\r", " ").replace("\n", " ");
+        //stopWords = stopWord.split("\\s+");
         for(Path path: pathList){
             String content = readFile.loadFromFile(path);
             content = content.replace("\r", " ").replace("\n", " ");
@@ -40,9 +40,9 @@ public class Main {
                 dm = new DataModel(path, false);
             }
 
-            ArrayList<String> sArray = new ArrayList<>(Arrays.asList(content.split(" ")));
+            ArrayList<String> sArray = new ArrayList<>(Arrays.asList(content.split("\\s+")));
             sArray.replaceAll(String::toLowerCase);
-            sArray = removeStopWords(sArray);
+            //sArray = removeStopWords(sArray);
             dm.setContent(sArray);
 
             dataModels.add(dm);
@@ -81,8 +81,9 @@ public class Main {
             }
 
             for (DataModel dataModel: trainingDataList){
-                HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(defaultFeatureVector, dataModel.getContent());
+                HashMap<String, Double> inputVector;
+                inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+                //inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
 
                 // Print status of preprocess
@@ -99,10 +100,15 @@ public class Main {
             // Build testing vectors
             for (DataModel dataModel: testingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(inputVector, dataModel.getContent());
+                inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+                //inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
+                testCount++;
+                if(testCount%40==0){
+                    System.out.print(testCount/4 + "% -> ");
+                }
             }
-
+            System.out.println();
             for( DataModel dataModel: testingDataList) {
 
                 KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, 3);
@@ -116,10 +122,10 @@ public class Main {
                     else tn++;
                 }
 
-                testCount++;
+                /*testCount++;
                 if(testCount%40==0){
                     System.out.print(testCount/4 + "% -> ");
-                }
+                }*/
             }
 
             double precisionP = tp/(tp+fp);
