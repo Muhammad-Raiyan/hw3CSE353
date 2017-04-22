@@ -1,3 +1,4 @@
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,27 +17,33 @@ public class KNNClassifier {
     }
 
     public int test(DataModel dataModel) {
-        HashMap<Double, DataModel> distanceMap = new HashMap<>();
+        HashMap<Double, ArrayList<DataModel>> distanceMap = new HashMap<>();
         for(DataModel currentDataPoint : trainingDataList){
-            distanceMap.put(getDistance(currentDataPoint.getFeaturevector(), dataModel), currentDataPoint);
+            double tempKey = getDistance(currentDataPoint.getFeaturevector(), dataModel);
+            ArrayList<DataModel> tempList = new ArrayList<>();
+            tempList.add(currentDataPoint);
+
+            if(distanceMap.containsKey(tempKey)){
+                tempList.addAll(distanceMap.get(tempKey));
+            }
+            distanceMap.put(tempKey, tempList);
         }
 
-        System.out.print(dataModel.isPos() + " ");
-        return majorityVote(distanceMap, 51) ? 1 : 0;
+        //System.out.print(dataModel.isPos() + " ");
+        return majorityVote(distanceMap, 3) ? 1 : 0;
     }
 
     private Double getDistance(HashMap<String, Double> currentDataPoint, DataModel testingDataModel) {
         Double distance = 0.0;
         HashMap<String, Double> testingVector = testingDataModel.getFeaturevector();
+        ArrayList<String> testingData = testingDataModel.getContent();
 
-        for(String key: currentDataPoint.keySet()){
-            if(testingVector.containsKey(key)){
-                distance += manhattanDistance(currentDataPoint.get(key), testingVector.get(key));
+        for(String oneWord : testingData){
+            if(currentDataPoint.containsKey(oneWord)){
+                distance += euclideanDistance(currentDataPoint.get(oneWord), testingVector.get(oneWord));
             }
-            else
-                distance += manhattanDistance(currentDataPoint.get(key), 0.0);
         }
-        return distance;
+        return (distance);
     }
 
     private Double manhattanDistance(Double x, Double y) {
@@ -45,24 +52,31 @@ public class KNNClassifier {
 
     private double euclideanDistance(Double x, Double y){
         double result = x - y;
-        return (result*result);
+        return Math.sqrt(result*result);
     }
 
-    private boolean majorityVote(HashMap<Double, DataModel> distanceMap, int k){
+    private boolean majorityVote(HashMap<Double, ArrayList<DataModel>> distanceMap, int k){
         ArrayList<Double> distanceList = new ArrayList<>(distanceMap.keySet());
         Collections.sort(distanceList);
-        int pos = 0, neg = 0;
-        double distance = distanceList.get(0);
-        System.out.println(distance + " " + distanceMap.get(distance).isPos());
-        for(int i =0; i< k; i++){
-            if(distanceMap.get(distanceList.get(i)).isPos()){
-                pos++;
-            }
-            else {
-                neg++;
+        ArrayList<DataModel> posList = new ArrayList<>();
+        ArrayList<DataModel> negList = new ArrayList<>();
+        //double distance = distanceList.get(0);
+        //System.out.println(distance + " " + distanceMap.get(distance).isPos());
+        int k_count = 0;
+        for(int i =0; i < distanceList.size(); i++){
+            ArrayList<DataModel> tempList = distanceMap.get(distanceList.get(i));
+            if(k_count>=k) break;
+            for(DataModel currentData : tempList){
+                k_count++;
+                if(currentData.isPos()){
+                    posList.add(currentData);
+                }
+                else {
+                    negList.add(currentData);
+                }
             }
         }
-        if(pos>neg) return true;
+        if(posList.size()>negList.size()) return true;
         else return false;
     }
 }

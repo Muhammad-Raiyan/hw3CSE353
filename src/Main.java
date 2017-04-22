@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 public class Main {
 
     public static int NFold = 5;
-    private static final String positiveDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw1CS353\\data\\pos";
-    private static final String negativeDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw1CS353\\data\\neg";
+    private static final String positiveDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\pos";
+    private static final String negativeDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\neg";
     private static String filter = "[^a-zA-Z\\s]";
 
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
@@ -75,7 +75,7 @@ public class Main {
 
             for (DataModel dataModel: trainingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(defaultFeatureVector, dataModel.getContent());
+                inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
                 dataModel.setFeaturevector(inputVector);
 
                 // Print status of preprocess
@@ -92,7 +92,7 @@ public class Main {
             // Build testing vectors
             for (DataModel dataModel: testingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(inputVector, dataModel.getContent());
+                inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
                 dataModel.setFeaturevector(inputVector);
             }
 
@@ -109,8 +109,8 @@ public class Main {
                 }
 
                 testCount++;
-                if(testCount%20==0){
-                    System.out.print(testCount/2 + "% -> ");
+                if(testCount%40==0){
+                    System.out.print(testCount/4 + "% -> ");
                 }
             }
 
