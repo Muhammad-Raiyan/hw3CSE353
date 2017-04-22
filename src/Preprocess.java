@@ -32,4 +32,28 @@ public class Preprocess {
             fileList.set(i, dm);
         }
     }
+
+    public HashMap<String, Double> buildBinaryFeatureVector(HashMap<String, Double> inputMap, ArrayList<String> content){
+        HashMap<String, Double> tempMap = new HashMap<>(inputMap);
+        for(String currentKey: content){
+            if(tempMap.containsKey(currentKey) && tempMap.get(currentKey) == 0.0){
+                tempMap.put(currentKey, 1.0);
+            }
+        }
+        return tempMap;
+    }
+
+    public HashMap<String, Double> buildFrequencyFeatureVector(HashMap<String, Double> inputMap, ArrayList<String> content){
+        HashMap<String, Double> tempMap = new HashMap<>(inputMap);
+        for(String currentKey: content){
+            if(tempMap.containsKey(currentKey)){
+                double temp = tempMap.get(currentKey);
+                temp++;
+                tempMap.put(currentKey, temp);
+            }
+        }
+        return tempMap;
+    }
+
+
 }

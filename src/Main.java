@@ -5,8 +5,6 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-
-
     public static int NFold = 5;
     private static final String positiveDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw1CS353\\data\\pos";
     private static final String negativeDir = "C:\\Users\\ishmam\\Documents\\Programming\\hw1CS353\\data\\neg";
@@ -81,6 +79,12 @@ public class Main {
                 }
             }
 
+            for (DataModel dataModel: trainingDataList){
+                HashMap<String, Double> inputVector = new HashMap<>();
+                inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+                dataModel.setFeaturevector(inputVector);
+
+            }
             System.out.println();
         }
 
