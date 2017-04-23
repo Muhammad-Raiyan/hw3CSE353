@@ -18,9 +18,9 @@ public class Main {
 
     public static void main(String[] args) {
 
-        System.out.println(args);
+        System.out.println(Arrays.toString(args));
 
-        if(args[0].replace("--", "").equals("binary")){
+        if(args[1].replace("--", "").equals("binary")){
             featureVectorStrategy = new BinaryFeatureVector();
         }
         else {
@@ -58,8 +58,12 @@ public class Main {
             dataModels.add(dm);
         }
         preprocess = new Preprocess(dataModels);
-        //startKNN(preprocess);
-        startNCC(preprocess);
+
+        if(args[0].replace("--", "").equals("knn"))
+            startKNN(preprocess);
+        else if(args[0].replace("--", "").equals("ncc"))
+            startNCC(preprocess);
+
         System.out.println("Done");
     }
     private static void startKNN(Preprocess preprocess){
