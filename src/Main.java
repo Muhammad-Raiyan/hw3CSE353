@@ -8,6 +8,7 @@ public class Main {
     public static int NFold = 5;
     private static final String positiveDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\pos";
     private static final String negativeDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\neg";
+    private static final String stopWordDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\stopWords.txt";
     private static String filter = "[^a-zA-Z\\s]";
 
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
@@ -20,7 +21,8 @@ public class Main {
         pathList.addAll(readFile.loadFileNames(Paths.get(negativeDir)));
         long seed = System.nanoTime();
         Collections.shuffle(pathList, new Random(seed));
-
+        String[] stopWords = readFile.loadFromFile(Paths.get(stopWordDir)).replace("\r", " ")
+                                     .replace("\n", " ").split(" ");
         for(Path path: pathList){
             String content = readFile.loadFromFile(path);
             content = content.replace("\r", "").replace("\n", "");
@@ -36,7 +38,11 @@ public class Main {
             }
 
             String sArray[] = content.split(" ");
-            dm.setContent(new ArrayList<>(Arrays.asList(sArray)));
+            ArrayList<String> tempContent = new ArrayList<>(Arrays.asList(sArray));
+            for(int i =0; i<stopWords.length; i++){
+                if(tempContent.contains(stopWords[i])) tempContent.remove(stopWords[i]);
+            }
+            dm.setContent(tempContent);
 
             dataModels.add(dm);
         }
@@ -76,6 +82,7 @@ public class Main {
             for (DataModel dataModel: trainingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
                 inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+                //inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
 
                 // Print status of preprocess
@@ -93,6 +100,7 @@ public class Main {
             for (DataModel dataModel: testingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
                 inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
+                //inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
             }
 

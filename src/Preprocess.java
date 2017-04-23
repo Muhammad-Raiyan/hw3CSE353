@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by ishmam on 3/24/2017.
@@ -56,5 +57,38 @@ public class Preprocess {
         return tempMap;
     }
 
+    public HashMap<String, Double> normalize(HashMap<String, Double> inputVector) {
+        Set<String> keySet = inputVector.keySet();
+        double mean = findMean(inputVector, keySet);
+        double sd = findSD(inputVector, mean, keySet);
+
+        for(String key: keySet){
+            if(inputVector.get(key)==0.0)
+                continue;
+            double z = 0.0;
+            double x = inputVector.get(key);
+            z = (x - mean) / sd;
+            inputVector.put(key, z);
+        }
+        return inputVector;
+    }
+
+    private double findMean(HashMap<String, Double> inputVector, Set<String> keySet) {
+        double result = 0.0;
+        for(String key: keySet){
+            result += inputVector.get(key);
+        }
+        return result/keySet.size();
+    }
+
+    private double findSD(HashMap<String, Double> inputVector, double mean, Set<String> keySet) {
+        double result = 0.0;
+        for(String key: keySet){
+            double diff = inputVector.get(key) - mean;
+            result += (diff*diff);
+        }
+
+        return Math.sqrt(result/keySet.size());
+    }
 
 }
