@@ -19,12 +19,12 @@ public class Main {
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
     private static ArrayList<Path> pathList = new ArrayList<>();
 
-    public static int main(String[] args) {
+    public static void main(String[] args) {
 
         System.out.println(Arrays.toString(args));
 
         if(args.length < 4 ) {
-            return 0;
+            System.exit(1);
         }
         if(args[2].replace("--", "").equals("binary")){
             featureVectorStrategy = new BinaryFeatureVector();
@@ -91,9 +91,9 @@ public class Main {
             System.out.println("Done");
         } catch (Exception e){
             e.printStackTrace();
-            return 0;
+            System.exit(-1);
         }
-        return 1;
+        System.exit(0);
     }
     private static void startKNN(Preprocess preprocess){
 
