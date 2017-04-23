@@ -39,9 +39,9 @@ public class Main {
 
             String sArray[] = content.split(" ");
             ArrayList<String> tempContent = new ArrayList<>(Arrays.asList(sArray));
-            /*for(int i =0; i<stopWords.length; i++){
+            for(int i =0; i<stopWords.length; i++){
                 if(tempContent.contains(stopWords[i])) tempContent.remove(stopWords[i]);
-            }*/
+            }
             dm.setContent(tempContent);
 
             dataModels.add(dm);
@@ -82,7 +82,7 @@ public class Main {
             for (DataModel dataModel: trainingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
                 inputVector = preprocess.buildFrequencyFeatureVector(defaultFeatureVector, dataModel.getContent());
-                //inputVector = preprocess.normalize(inputVector);
+                inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
 
                 // Print status of preprocess
@@ -100,7 +100,7 @@ public class Main {
             for (DataModel dataModel: testingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
                 inputVector = preprocess.buildFrequencyFeatureVector(inputVector, dataModel.getContent());
-                //inputVector = preprocess.normalize(inputVector);
+                inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
             }
 

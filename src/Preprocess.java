@@ -114,7 +114,7 @@ public class Preprocess {
             result += (temp*temp);
         }
 
-        return Math.sqrt(result/inputVector.keySet().size());
+        return Math.sqrt(result);
     }
 
 }
