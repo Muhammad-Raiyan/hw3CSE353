@@ -57,7 +57,7 @@ public class Preprocess {
         return tempMap;
     }
 
-    public HashMap<String, Double> normalize(HashMap<String, Double> inputVector) {
+    /*public HashMap<String, Double> normalize(HashMap<String, Double> inputVector) {
         Set<String> keySet = inputVector.keySet();
         double mean = findMean(inputVector, keySet);
         double sd = findSD(inputVector, mean, keySet);
@@ -71,7 +71,22 @@ public class Preprocess {
             inputVector.put(key, z);
         }
         return inputVector;
+    }*/
+
+    public HashMap<String, Double> normalize(HashMap<String, Double> inputVector){
+
+        Set<String> keySet = inputVector.keySet();
+        double norm = vectorNorm(inputVector);
+
+        for(String key: keySet){
+            if(inputVector.get(key)==0.0)
+                continue;
+            double x = inputVector.get(key)/norm;
+            inputVector.put(key, x);
+        }
+        return inputVector;
     }
+
 
     private double findMean(HashMap<String, Double> inputVector, Set<String> keySet) {
         double result = 0.0;
@@ -89,6 +104,17 @@ public class Preprocess {
         }
 
         return Math.sqrt(result/keySet.size());
+    }
+
+    private double vectorNorm(HashMap<String, Double> inputVector){
+        double result = 0.0;
+
+        for(String key: inputVector.keySet()){
+            double temp = inputVector.get(key);
+            result += (temp*temp);
+        }
+
+        return Math.sqrt(result/inputVector.keySet().size());
     }
 
 }

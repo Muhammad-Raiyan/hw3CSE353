@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 public class Main {
 
     public static int NFold = 5;
-    private static final String positiveDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\pos";
-    private static final String negativeDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\neg";
-    private static final String stopWordDir = "C:\\Users\\raiya\\IdeaProjects\\hw3CSE353\\data\\stopWords.txt";
+    private static final String positiveDir = "./data/pos";
+    private static final String negativeDir = "./data/neg";
+    private static final String stopWordDir = "./data/stopWords.txt";
     private static String filter = "[^a-zA-Z\\s]";
 
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
@@ -39,9 +39,9 @@ public class Main {
 
             String sArray[] = content.split(" ");
             ArrayList<String> tempContent = new ArrayList<>(Arrays.asList(sArray));
-            for(int i =0; i<stopWords.length; i++){
+            /*for(int i =0; i<stopWords.length; i++){
                 if(tempContent.contains(stopWords[i])) tempContent.remove(stopWords[i]);
-            }
+            }*/
             dm.setContent(tempContent);
 
             dataModels.add(dm);
@@ -81,7 +81,7 @@ public class Main {
 
             for (DataModel dataModel: trainingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+                inputVector = preprocess.buildFrequencyFeatureVector(defaultFeatureVector, dataModel.getContent());
                 //inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
 
@@ -99,7 +99,7 @@ public class Main {
             // Build testing vectors
             for (DataModel dataModel: testingDataList){
                 HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
+                inputVector = preprocess.buildFrequencyFeatureVector(inputVector, dataModel.getContent());
                 //inputVector = preprocess.normalize(inputVector);
                 dataModel.setFeaturevector(inputVector);
             }

@@ -30,7 +30,7 @@ public class KNNClassifier {
         }
 
         //System.out.print(dataModel.isPos() + " ");
-        return majorityVote(distanceMap, 9) ? 1 : 0;
+        return majorityVote(distanceMap, 3) ? 1 : 0;
     }
 
     private Double getDistance(HashMap<String, Double> currentDataPoint, DataModel testingDataModel) {
