@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 public class NearestCentroidClassifier extends Classifier{
     private final ArrayList<DataModel> trainingDataList;
     HashMap<String, Double> posCentroid, negCentroid;
+
     public NearestCentroidClassifier(ArrayList<DataModel> trainingDataList) {
         this.trainingDataList = trainingDataList;
     }

@@ -9,9 +9,10 @@ public class Main {
     private static final String positiveDir = "./data/pos";
     private static final String negativeDir = "./data/neg";
     private static final String stopWordDir = "./data/stopWords.txt";
-    private static String filter = "[^a-zA-Z\\s]";
+    private static final String filter = "[^a-zA-Z\\s]";
+    private static final String accuracyKey = "Accuracy", precisionKey = "Precision", recallKey = "Recall";
 
-    static Preprocess preprocess;
+    private static Preprocess preprocess;
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
     private static ArrayList<Path> pathList = new ArrayList<>();
 
@@ -48,111 +49,53 @@ public class Main {
             dataModels.add(dm);
         }
         preprocess = new Preprocess(dataModels);
-        startKNN(preprocess);
-        //startNCC(preprocess);
+        //startKNN(preprocess);
+        startNCC(preprocess);
         System.out.println("Done");
     }
-
     private static void startKNN(Preprocess preprocess){
-
-
-        double avgAccuracy = 0, avgPrecision = 0, avgRecall = 0;
 
         ArrayList<DataModel> trainingDataList;
         ArrayList<DataModel> testingDataList;
+        HashMap<String, Double> avgResult = new HashMap<>();
+        avgResult.put(accuracyKey, 0.0);
+        avgResult.put(precisionKey, 0.0);
+        avgResult.put(recallKey, 0.0);
 
-        for(int i = 0; i<NFold; i++){
+        for(int i = 0; i<NFold; i++) {
 
             preprocess.runCrossValidation(i);
 
             trainingDataList = (ArrayList<DataModel>) dataModels.stream().filter(DataModel::isTrainingData).collect(Collectors.toList());
             testingDataList = (ArrayList<DataModel>) dataModels.stream().filter(DataModel::isTestData).collect(Collectors.toList());
 
-            System.out.println("Fold #" + (i+1) + "\nPrepreprocessing: ");
-            HashMap<String, Double> defaultFeatureVector = new HashMap<>();
-            int count = 0;
-            for(DataModel dataModel: trainingDataList){
+            System.out.println("\nFold #" + (i + 1) + "\nPrepreprocessing: ");
+            HashMap<String, Double> defaultFeatureVector = generateDefaultVector(trainingDataList);
 
-                // build default feature vector
-                ArrayList<String> currentContent = dataModel.getContent();
-                for(String key : currentContent){
-                    if(!defaultFeatureVector.containsKey(key)) {
-                        defaultFeatureVector.put(key, 0.0);
-                    }
-                }
-            }
+            generateTrainigVectors(defaultFeatureVector, trainingDataList, true);
 
-            for (DataModel dataModel: trainingDataList){
-                HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(defaultFeatureVector, dataModel.getContent());
-                inputVector = preprocess.normalize(inputVector);
-                dataModel.setFeaturevector(inputVector);
-
-                // Print status of preprocess
-                count++;
-                if(count%160==0){
-                    System.out.print(count/16 + "% -> ");
-                }
-            }
-
-            System.out.println("\nTesting: ");
-            int testCount = 0;
-            double tp = 0, fp = 0, tn = 0, fn = 0;
-
-            // Build testing vectors
-            for (DataModel dataModel: testingDataList){
-                HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(inputVector, dataModel.getContent());
-                inputVector = preprocess.normalize(inputVector);
-                dataModel.setFeaturevector(inputVector);
-            }
+            generateTestingVector(testingDataList, true);
 
             KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, 51);
-            for( DataModel dataModel: testingDataList) {
-                int prediction = knnClassifier.test(dataModel);
-                if(prediction == 1){
-                    if(dataModel.isPos()) tp++;
-                    else fp++;
-                }
-                else {
-                    if(dataModel.isPos()) fn++;
-                    else tn++;
-                }
-
-                testCount++;
-                if(testCount%40==0){
-                    System.out.print(testCount/4 + "% -> ");
-                }
-            }
-
-            double precisionP = tp/(tp+fp);
-            double precisionN = tn/(tn+fp);
-            double recallP = tp / (tp+fn);
-            double recallN = tn / (tn+fp);
-            double accuracy = (tp+tn)/(tp+tn+fp+fn);
-            double precision = (precisionP+precisionN)/2.0;
-            double recall = (recallN + recallP) / 2.0;
-            System.out.println("\nTP - FP - TN - FN: " + tp + " " + fp + " " + tn + " " + fn);
-            System.out.println("Accuracy: " + String.format("%.4f", accuracy));
-            System.out.println("Precision: " + String.format("%.4f", precision));
-            System.out.println("Recall: " + String.format("%.4f", recall));
-
-            avgAccuracy += accuracy;
-            avgPrecision += precision;
-            avgRecall += recall;
-            System.out.println();
+            HashMap<String, Double> tempResult = runClassifier(knnClassifier, testingDataList);
+            avgResult.put(accuracyKey, avgResult.get(accuracyKey)+tempResult.get(accuracyKey));
+            avgResult.put(precisionKey, avgResult.get(precisionKey)+tempResult.get(precisionKey));
+            avgResult.put(recallKey, avgResult.get(recallKey)+tempResult.get(recallKey));
         }
-        System.out.println("Average Accuracy: " + String.format("%.3f", avgAccuracy/5.0));
-        System.out.println("Average Precision: " + String.format("%.3f", avgPrecision/5.0));
-        System.out.println("Average Recall: " + String.format("%.3f", avgRecall/5.0));
+
+        System.out.println("Average Accuracy: " + String.format("%.3f", avgResult.get(accuracyKey)/5.0));
+        System.out.println("Average Precision: " + String.format("%.3f", avgResult.get(precisionKey)/5.0));
+        System.out.println("Average Recall: " + String.format("%.3f", avgResult.get(recallKey)/5.0));
     }
 
     public static void startNCC(Preprocess preprocess){
 
-        double avgAccuracy = 0, avgPrecision = 0, avgRecall = 0;
-
         ArrayList<DataModel> trainingDataList;
         ArrayList<DataModel> testingDataList;
+        HashMap<String, Double> avgResult = new HashMap<>();
+        avgResult.put(accuracyKey, 0.0);
+        avgResult.put(precisionKey, 0.0);
+        avgResult.put(recallKey, 0.0);
 
         for(int i = 0; i<NFold; i++){
 
@@ -161,86 +104,114 @@ public class Main {
             trainingDataList = (ArrayList<DataModel>) dataModels.stream().filter(DataModel::isTrainingData).collect(Collectors.toList());
             testingDataList = (ArrayList<DataModel>) dataModels.stream().filter(DataModel::isTestData).collect(Collectors.toList());
 
-            System.out.println("Fold #" + (i+1) + "\nPrepreprocessing: ");
-            HashMap<String, Double> defaultFeatureVector = new HashMap<>();
-            int count = 0;
-            for(DataModel dataModel: trainingDataList){
-
-                // build default feature vector
-                ArrayList<String> currentContent = dataModel.getContent();
-                for(String key : currentContent){
-                    if(!defaultFeatureVector.containsKey(key)) {
-                        defaultFeatureVector.put(key, 0.0);
-                    }
-                }
-            }
-
-            for (DataModel dataModel: trainingDataList){
-                HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(defaultFeatureVector, dataModel.getContent());
-                inputVector = preprocess.normalize(inputVector);
-                dataModel.setFeaturevector(inputVector);
-
-                // Print status of preprocess
-                count++;
-                if(count%160==0){
-                    System.out.print(count/16 + "% -> ");
-                }
-            }
+            System.out.println("\nFold #" + (i+1) + "\nPrepreprocessing: ");
+            HashMap<String, Double> defaultFeatureVector = generateDefaultVector(trainingDataList);
+            System.out.print("Building training vectors: ");
+            generateTrainigVectors(defaultFeatureVector, trainingDataList, false);
 
             NearestCentroidClassifier ncClassifier = new NearestCentroidClassifier(trainingDataList);
+
             System.out.println("\nTraining: ");
             ncClassifier.train(preprocess);
 
-            System.out.println("\nTesting: ");
-            int testCount = 0;
-            double tp = 0, fp = 0, tn = 0, fn = 0;
+            System.out.print("\nBuilding Testing vectors: ");
+            generateTestingVector(testingDataList, false);
 
-            // Build testing vectors
-            for (DataModel dataModel: testingDataList){
-                HashMap<String, Double> inputVector = new HashMap<>();
-                inputVector = preprocess.buildFrequencyFeatureVector(inputVector, dataModel.getContent());
-                inputVector = preprocess.normalize(inputVector);
-                dataModel.setFeaturevector(inputVector);
-            }
+            HashMap<String, Double> tempResult = runClassifier(ncClassifier, testingDataList);
 
+            avgResult.put(accuracyKey, avgResult.get(accuracyKey)+tempResult.get(accuracyKey));
+            avgResult.put(precisionKey, avgResult.get(precisionKey)+tempResult.get(precisionKey));
+            avgResult.put(recallKey, avgResult.get(recallKey)+tempResult.get(recallKey));
 
-            for( DataModel dataModel: testingDataList) {
-                int prediction = ncClassifier.test(dataModel);
-                if(prediction == 1){
-                    if(dataModel.isPos()) tp++;
-                    else fp++;
-                }
-                else {
-                    if(dataModel.isPos()) fn++;
-                    else tn++;
-                }
-
-                testCount++;
-                if(testCount%40==0){
-                    System.out.print(testCount/4 + "% -> ");
-                }
-            }
-
-            double precisionP = tp/(tp+fp);
-            double precisionN = tn/(tn+fp);
-            double recallP = tp / (tp+fn);
-            double recallN = tn / (tn+fp);
-            double accuracy = (tp+tn)/(tp+tn+fp+fn);
-            double precision = (precisionP+precisionN)/2.0;
-            double recall = (recallN + recallP) / 2.0;
-            System.out.println("\nTP - FP - TN - FN: " + tp + " " + fp + " " + tn + " " + fn);
-            System.out.println("Accuracy: " + String.format("%.4f", accuracy));
-            System.out.println("Precision: " + String.format("%.4f", precision));
-            System.out.println("Recall: " + String.format("%.4f", recall));
-
-            avgAccuracy += accuracy;
-            avgPrecision += precision;
-            avgRecall += recall;
-            System.out.println();
         }
-        System.out.println("Average Accuracy: " + String.format("%.3f", avgAccuracy/5.0));
-        System.out.println("Average Precision: " + String.format("%.3f", avgPrecision/5.0));
-        System.out.println("Average Recall: " + String.format("%.3f", avgRecall/5.0));
+        System.out.println("Average Accuracy: " + String.format("%.3f", avgResult.get(accuracyKey)/5.0));
+        System.out.println("Average Precision: " + String.format("%.3f", avgResult.get(precisionKey)/5.0));
+        System.out.println("Average Recall: " + String.format("%.3f", avgResult.get(recallKey)/5.0));
     }
+
+
+
+    private static HashMap<String, Double> generateDefaultVector(ArrayList<DataModel> dataList) {
+        HashMap<String, Double> defaultFeatureVector = new HashMap<>();
+
+        for(DataModel dataModel: dataList){
+            // build default feature vector
+            ArrayList<String> currentContent = dataModel.getContent();
+            for(String key : currentContent){
+                if(!defaultFeatureVector.containsKey(key)) {
+                    defaultFeatureVector.put(key, 0.0);
+                }
+            }
+        }
+        return defaultFeatureVector;
+    }
+
+    private static void generateTestingVector(ArrayList<DataModel> testingDataList, boolean normalize) {
+        for (DataModel dataModel: testingDataList){
+            HashMap<String, Double> inputVector = new HashMap<>();
+            inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
+            if(normalize) inputVector = preprocess.normalize(inputVector);
+            dataModel.setFeaturevector(inputVector);
+        }
+    }
+
+    private static void generateTrainigVectors(HashMap<String, Double> defaultFeatureVector, ArrayList<DataModel> dataList, boolean normalize) {
+        int count = 0;
+        for (DataModel dataModel: dataList){
+            HashMap<String, Double> inputVector = new HashMap<>();
+            inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+            if(normalize) inputVector = preprocess.normalize(inputVector);
+            dataModel.setFeaturevector(inputVector);
+
+            // Print status of preprocess
+            count++;
+            if(count%160==0){
+                System.out.print(count/16 + "% -> ");
+            }
+        }
+    }
+
+    public static HashMap<String, Double> runClassifier(Classifier classifier, ArrayList<DataModel> testingDataList){
+        System.out.println("\nTesting: ");
+        double tp = 0, fp = 0, tn = 0, fn = 0;
+        double avgAccuracy = 0, avgPrecision = 0, avgRecall = 0;
+        HashMap<String, Double> avgResult = new HashMap<>();
+
+        int testCount = 0;
+        for( DataModel dataModel: testingDataList) {
+            int prediction = classifier.test(dataModel);
+            if(prediction == 1){
+                if(dataModel.isPos()) tp++;
+                else fp++;
+            }
+            else {
+                if(dataModel.isPos()) fn++;
+                else tn++;
+            }
+
+            testCount++;
+            if(testCount%40==0){
+                System.out.print(testCount/4 + "% -> ");
+            }
+        }
+
+        double precisionP = tp/(tp+fp);
+        double precisionN = tn/(tn+fp);
+        double recallP = tp / (tp+fn);
+        double recallN = tn / (tn+fp);
+        double accuracy = (tp+tn)/(tp+tn+fp+fn);
+        double precision = (precisionP+precisionN)/2.0;
+        double recall = (recallN + recallP) / 2.0;
+        System.out.println("\nTP - FP - TN - FN: " + tp + " " + fp + " " + tn + " " + fn);
+        System.out.println("Accuracy: " + String.format("%.4f", accuracy));
+        System.out.println("Precision: " + String.format("%.4f", precision));
+        System.out.println("Recall: " + String.format("%.4f", recall));
+
+        avgResult.put(accuracyKey, accuracy);
+        avgResult.put(precisionKey, precision);
+        avgResult.put(recallKey, recall);
+
+        return avgResult;
+    }
+
 }

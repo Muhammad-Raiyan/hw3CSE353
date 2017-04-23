@@ -29,4 +29,7 @@ public abstract class Classifier {
         }
         return (distance);
     }
+
+
+    public abstract int test(DataModel dataModel);
 }
