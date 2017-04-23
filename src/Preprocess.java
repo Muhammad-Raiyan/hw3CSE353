@@ -8,7 +8,6 @@ import java.util.Set;
  * @author ishmam
  */
 public class Preprocess {
-
     private ArrayList<DataModel> fileList;
 
     public Preprocess(ArrayList<DataModel> fileList) {
@@ -34,7 +33,11 @@ public class Preprocess {
         }
     }
 
-    public HashMap<String, Double> buildBinaryFeatureVector(HashMap<String, Double> inputMap, ArrayList<String> content){
+    public HashMap<String, Double> buildFeatureVector(HashMap<String, Double> inputMap, ArrayList<String> content, FeatureVectorStrategy featureVectorStrategy){
+        return featureVectorStrategy.buildFeatureVector(inputMap, content);
+    }
+
+    /*public HashMap<String, Double> buildBinaryFeatureVector(HashMap<String, Double> inputMap, ArrayList<String> content){
         HashMap<String, Double> tempMap = new HashMap<>(inputMap);
         for(String currentKey: content){
             tempMap.put(currentKey, 1.0);
@@ -55,7 +58,7 @@ public class Preprocess {
             }
         }
         return tempMap;
-    }
+    }*/
 
     /*public HashMap<String, Double> normalize(HashMap<String, Double> inputVector) {
         Set<String> keySet = inputVector.keySet();

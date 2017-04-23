@@ -11,12 +11,21 @@ public class Main {
     private static final String stopWordDir = "./data/stopWords.txt";
     private static final String filter = "[^a-zA-Z\\s]";
     private static final String accuracyKey = "Accuracy", precisionKey = "Precision", recallKey = "Recall";
-
+    private static FeatureVectorStrategy featureVectorStrategy;
     private static Preprocess preprocess;
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
     private static ArrayList<Path> pathList = new ArrayList<>();
 
     public static void main(String[] args) {
+
+        System.out.println(args);
+
+        if(args[0].replace("--", "").equals("binary")){
+            featureVectorStrategy = new BinaryFeatureVector();
+        }
+        else {
+            featureVectorStrategy = new FrequencyFeatureVector();
+        }
 
         ReadFile readFile = new ReadFile();
         pathList.addAll(readFile.loadFileNames(Paths.get(positiveDir)));
@@ -149,7 +158,8 @@ public class Main {
     private static void generateTestingVector(ArrayList<DataModel> testingDataList, boolean normalize) {
         for (DataModel dataModel: testingDataList){
             HashMap<String, Double> inputVector = new HashMap<>();
-            inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
+            //inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
+            inputVector = preprocess.buildFeatureVector(inputVector, dataModel.getContent(), featureVectorStrategy);
             if(normalize) inputVector = preprocess.normalize(inputVector);
             dataModel.setFeaturevector(inputVector);
         }
@@ -159,7 +169,7 @@ public class Main {
         int count = 0;
         for (DataModel dataModel: dataList){
             HashMap<String, Double> inputVector = new HashMap<>();
-            inputVector = preprocess.buildBinaryFeatureVector(defaultFeatureVector, dataModel.getContent());
+            inputVector = preprocess.buildFeatureVector(defaultFeatureVector, dataModel.getContent(), featureVectorStrategy);
             if(normalize) inputVector = preprocess.normalize(inputVector);
             dataModel.setFeaturevector(inputVector);
 
