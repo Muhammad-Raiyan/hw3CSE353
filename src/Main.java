@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 public class Main {
 
     public static int NFold = 5;
+    public static DistanceStrategy distanceStrategy;
+    public static boolean keepPunct = true;
+
     private static final String positiveDir = "./data/pos";
     private static final String negativeDir = "./data/neg";
     private static final String stopWordDir = "./data/stopWords.txt";
@@ -16,15 +19,32 @@ public class Main {
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
     private static ArrayList<Path> pathList = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static int main(String[] args) {
 
         System.out.println(Arrays.toString(args));
 
-        if(args[1].replace("--", "").equals("binary")){
+        if(args.length < 4 ) {
+            return 0;
+        }
+        if(args[2].replace("--", "").equals("binary")){
             featureVectorStrategy = new BinaryFeatureVector();
         }
         else {
             featureVectorStrategy = new FrequencyFeatureVector();
+        }
+
+        if(args[3].replace("--", "").equals("modify")){
+            keepPunct = false;
+        }
+        else {
+            keepPunct = true;
+        }
+
+        if(args[4].replace("--", "").replace("p=", "").equals("0")){
+            distanceStrategy = new ManhattanDistance();
+        }
+        if(args[4].replace("--", "").replace("p=", "").equals("1")){
+            distanceStrategy = new EuclideanDistance();
         }
 
         ReadFile readFile = new ReadFile();
@@ -37,7 +57,9 @@ public class Main {
         for(Path path: pathList){
             String content = readFile.loadFromFile(path);
             content = content.replace("\r", "").replace("\n", "");
-            //content = content.replaceAll(filter, "");
+
+            if(!keepPunct)
+                content = content.replaceAll(filter, "");
 
             // add all datamodel to filelist
             DataModel dm;
@@ -59,12 +81,19 @@ public class Main {
         }
         preprocess = new Preprocess(dataModels);
 
-        if(args[0].replace("--", "").equals("knn"))
-            startKNN(preprocess);
-        else if(args[0].replace("--", "").equals("ncc"))
-            startNCC(preprocess);
+        try {
+            if (args[1].replace("--", "").equals("knn")) {
+                startKNN(preprocess);
+                NFold = Integer.parseInt(args[5].replace("--", "").replace("k=", ""));
+            } else if (args[1].replace("--", "").equals("ncc"))
+                startNCC(preprocess);
 
-        System.out.println("Done");
+            System.out.println("Done");
+        } catch (Exception e){
+            e.printStackTrace();
+            return 0;
+        }
+        return 1;
     }
     private static void startKNN(Preprocess preprocess){
 
@@ -89,7 +118,7 @@ public class Main {
 
             generateTestingVector(testingDataList, true);
 
-            KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, 51);
+            KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, NFold);
             HashMap<String, Double> tempResult = runClassifier(knnClassifier, testingDataList);
             avgResult.put(accuracyKey, avgResult.get(accuracyKey)+tempResult.get(accuracyKey));
             avgResult.put(precisionKey, avgResult.get(precisionKey)+tempResult.get(precisionKey));

@@ -20,7 +20,7 @@ public class KNNClassifier extends Classifier{
     public int test(DataModel dataModel) {
         HashMap<Double, ArrayList<DataModel>> distanceMap = new HashMap<>();
         for(DataModel currentDataPoint : trainingDataList){
-            double tempKey = getDistance(currentDataPoint.getFeaturevector(), dataModel.getFeaturevector());
+            double tempKey = getDistance(currentDataPoint.getFeaturevector(), dataModel.getFeaturevector(), Main.distanceStrategy);
             ArrayList<DataModel> tempList = new ArrayList<>();
             tempList.add(currentDataPoint);
 
@@ -31,7 +31,7 @@ public class KNNClassifier extends Classifier{
         }
 
         //System.out.print(dataModel.isPos() + " ");
-        return majorityVote(distanceMap, 25) ? 1 : 0;
+        return majorityVote(distanceMap, K) ? 1 : 0;
     }
 
     /*protected Double getDistance(HashMap<String, Double> currentDataPoint, HashMap<String, Double> testingDataPoint) {

@@ -8,23 +8,14 @@ import java.util.Set;
  */
 public abstract class Classifier {
 
-    protected Double manhattanDistance(Double x, Double y) {
-        return Math.abs(x-y);
-    }
-
-    protected double euclideanDistance(Double x, Double y){
-        double result = x - y;
-        return Math.sqrt(result*result);
-    }
-
-    protected Double getDistance(HashMap<String, Double> currentDataPoint, HashMap<String, Double> testingDataPoint) {
+    protected Double getDistance(HashMap<String, Double> currentDataPoint, HashMap<String, Double> testingDataPoint, DistanceStrategy distanceStrategy) {
         Double distance = 0.0;
-        //HashMap<String, Double> testingVector = testingDataPoint.getFeaturevector();
         Set<String> testingData = testingDataPoint.keySet();
 
         for(String oneWord : testingData){
             if(currentDataPoint.containsKey(oneWord)){
-                distance += euclideanDistance(currentDataPoint.get(oneWord), testingDataPoint.get(oneWord));
+                //distance += euclideanDistance(currentDataPoint.get(oneWord), testingDataPoint.get(oneWord));
+                distance += distanceStrategy.findDistance(currentDataPoint.get(oneWord), testingDataPoint.get(oneWord));
             }
         }
         return (distance);

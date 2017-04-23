@@ -56,8 +56,8 @@ public class NearestCentroidClassifier extends Classifier{
 
     public int test(DataModel testingData){
         double dPositive, dNegative;
-        dPositive = Math.abs(getDistance(posCentroid, testingData.getFeaturevector()));
-        dNegative = Math.abs(getDistance(negCentroid, testingData.getFeaturevector()));
+        dPositive = Math.abs(getDistance(posCentroid, testingData.getFeaturevector(), Main.distanceStrategy));
+        dNegative = Math.abs(getDistance(negCentroid, testingData.getFeaturevector(), Main.distanceStrategy));
         if (dPositive < dNegative)
             return 1;
         else
