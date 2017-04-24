@@ -119,4 +119,22 @@ public class Preprocess {
         return Math.sqrt(result);
     }
 
+    public double calculateIDF(ArrayList<DataModel> trainingDataList, String term) {
+        double n = 0;
+        for (DataModel dm : trainingDataList) {
+            ArrayList<String> content = dm.getContent();
+            try {
+                for (String word : content) {
+                    if (term.equalsIgnoreCase(word)) {
+                        n++;
+                        break;
+                    }
+                }
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return Math.log(trainingDataList.size() / n);
+    }
 }

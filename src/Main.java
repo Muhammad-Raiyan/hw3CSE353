@@ -8,6 +8,8 @@ public class Main {
     public static int NFold = 5;
     public static DistanceStrategy distanceStrategy;
     public static boolean keepPunct = true;
+    private static FeatureVectorStrategy featureVectorStrategy;
+    private static Preprocess preprocess;
 
     private static final String positiveDir = "./data/pos";
     private static final String negativeDir = "./data/neg";
@@ -15,8 +17,7 @@ public class Main {
 
     private static final String filter = "[^a-zA-Z\\s]";
     private static final String accuracyKey = "Accuracy", precisionKey = "Precision", recallKey = "Recall";
-    private static FeatureVectorStrategy featureVectorStrategy;
-    private static Preprocess preprocess;
+
     private static ArrayList<DataModel> dataModels = new ArrayList<>();
     private static ArrayList<Path> pathList = new ArrayList<>();
 
@@ -31,7 +32,7 @@ public class Main {
             featureVectorStrategy = new BinaryFeatureVector();
         }
         else {
-            featureVectorStrategy = new FrequencyFeatureVector();
+            featureVectorStrategy = new TFIDF();
         }
 
         if(args[3].replace("--", "").equals("modify")){
@@ -118,7 +119,10 @@ public class Main {
             generateTrainigVectors(defaultFeatureVector, trainingDataList, true);
 
             generateTestingVector(testingDataList, true);
-
+            if(featureVectorStrategy instanceof TFIDF){
+                calculateTFIDF(trainingDataList);
+                calculateTFIDF(testingDataList);
+            }
             KNNClassifier knnClassifier = new KNNClassifier(trainingDataList, NFold);
             HashMap<String, Double> tempResult = runClassifier(knnClassifier, testingDataList);
             avgResult.put(accuracyKey, avgResult.get(accuracyKey)+tempResult.get(accuracyKey));
@@ -152,6 +156,10 @@ public class Main {
             System.out.print("Building training vectors: ");
             generateTrainigVectors(defaultFeatureVector, trainingDataList, false);
 
+            if(featureVectorStrategy instanceof TFIDF){
+                calculateTFIDF(trainingDataList);
+            }
+
             NearestCentroidClassifier ncClassifier = new NearestCentroidClassifier(trainingDataList);
 
             System.out.println("\nTraining: ");
@@ -160,7 +168,9 @@ public class Main {
             System.out.print("\nBuilding Testing vectors: ");
             generateTestingVector(testingDataList, false);
             System.out.println("Complete: 100%");
-
+            if(featureVectorStrategy instanceof TFIDF){
+                calculateTFIDF(testingDataList);
+            }
             HashMap<String, Double> tempResult = runClassifier(ncClassifier, testingDataList);
 
             avgResult.put(accuracyKey, avgResult.get(accuracyKey)+tempResult.get(accuracyKey));
@@ -172,8 +182,6 @@ public class Main {
         System.out.println("Average Precision: " + String.format("%.3f", avgResult.get(precisionKey)/5.0));
         System.out.println("Average Recall: " + String.format("%.3f", avgResult.get(recallKey)/5.0));
     }
-
-
 
     private static HashMap<String, Double> generateDefaultVector(ArrayList<DataModel> dataList) {
         HashMap<String, Double> defaultFeatureVector = new HashMap<>();
@@ -256,6 +264,26 @@ public class Main {
         avgResult.put(recallKey, recall);
 
         return avgResult;
+    }
+
+    private static void calculateTFIDF(ArrayList<DataModel> trainingDataList) {
+        HashMap<String, Double> idfMap = new HashMap<>();
+        System.out.print("\nCalculation TF-IDF: ");
+        int count = 0;
+        for(DataModel dataModel: trainingDataList){
+            count++;
+            HashMap<String, Double> featureVector = dataModel.getFeaturevector();
+            for(String key: dataModel.getContent()){
+                if(!idfMap.containsKey(key)){
+                    double idf = preprocess.calculateIDF(trainingDataList, key);
+                    idfMap.put(key, idf);
+                }
+                featureVector.put(key, featureVector.get(key) * idfMap.get(key) );
+            }
+            dataModel.setFeaturevector(preprocess.normalize(featureVector));
+            //dataModel.setFeaturevector(featureVector);
+            if(count%100==0) System.out.print("* ");
+        }
     }
 
 }
