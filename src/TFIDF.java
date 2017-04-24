@@ -27,6 +27,6 @@ public class TFIDF implements FeatureVectorStrategy {
         }
         double bias = 1.0;
         if(result == 0.0) bias = 0;
-        return bias+Math.log(result/content.length);
+        return bias+Math.log(result);
     }
 }
