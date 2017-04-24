@@ -90,7 +90,6 @@ public class Preprocess {
         return inputVector;
     }
 
-
     private double findMean(HashMap<String, Double> inputVector, Set<String> keySet) {
         double result = 0.0;
         for(String key: keySet){

@@ -12,6 +12,7 @@ public class Main {
     private static final String positiveDir = "./data/pos";
     private static final String negativeDir = "./data/neg";
     private static final String stopWordDir = "./data/stopWords.txt";
+
     private static final String filter = "[^a-zA-Z\\s]";
     private static final String accuracyKey = "Accuracy", precisionKey = "Precision", recallKey = "Recall";
     private static FeatureVectorStrategy featureVectorStrategy;
@@ -158,6 +159,7 @@ public class Main {
 
             System.out.print("\nBuilding Testing vectors: ");
             generateTestingVector(testingDataList, false);
+            System.out.println("Complete: 100%");
 
             HashMap<String, Double> tempResult = runClassifier(ncClassifier, testingDataList);
 
@@ -191,7 +193,6 @@ public class Main {
     private static void generateTestingVector(ArrayList<DataModel> testingDataList, boolean normalize) {
         for (DataModel dataModel: testingDataList){
             HashMap<String, Double> inputVector = new HashMap<>();
-            //inputVector = preprocess.buildBinaryFeatureVector(inputVector, dataModel.getContent());
             inputVector = preprocess.buildFeatureVector(inputVector, dataModel.getContent(), featureVectorStrategy);
             if(normalize) inputVector = preprocess.normalize(inputVector);
             dataModel.setFeaturevector(inputVector);

@@ -14,7 +14,6 @@ public abstract class Classifier {
 
         for(String oneWord : testingData){
             if(currentDataPoint.containsKey(oneWord)){
-                //distance += euclideanDistance(currentDataPoint.get(oneWord), testingDataPoint.get(oneWord));
                 distance += distanceStrategy.findDistance(currentDataPoint.get(oneWord), testingDataPoint.get(oneWord));
             }
         }
